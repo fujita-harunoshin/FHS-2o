@@ -1,9 +1,11 @@
-[attr]utf8 text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 
-[attr]utf16 encoding=UTF-16LE-BOM working-tree-encoding=UTF-16LE-BOM diff merge eol=CRLF 
-[attr]binary  -text diff 
-*.ex?     binary 
-*.h       utf8 diff=c 
-*.json    utf8 diff=c 
-*.mq?     utf8 diff=c 
-*.mqproj  utf16 diff=c 
-*.txt     utf8 diff=c 
+# UTF-8 テキストファイルの設定（LF 改行、カスタムホワイトスペースルール付き）
+*.h       text eol=lf diff=c whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.json    text eol=lf diff=c whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.txt     text eol=lf diff=c whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+
+# UTF-16LE-BOM でエンコードされたファイルについては、テキストとして扱うための設定
+*.mq?     text working-tree-encoding=UTF-16LE-BOM diff=c
+*.mqproj  text working-tree-encoding=UTF-16LE-BOM diff=c
+
+# 明示的にバイナリとして扱うファイル
+*.ex?     binary -text diff
