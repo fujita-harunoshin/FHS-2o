@@ -1,0 +1,9 @@
+[attr]utf8 text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 
+[attr]utf16 encoding=UTF-16LE-BOM working-tree-encoding=UTF-16LE-BOM diff merge eol=CRLF 
+[attr]binary  -text diff 
+*.ex?     binary 
+*.h       utf8 diff=c 
+*.json    utf8 diff=c 
+*.mq?     utf8 diff=c 
+*.mqproj  utf16 diff=c 
+*.txt     utf8 diff=c 
