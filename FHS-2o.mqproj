@@ -343,6 +343,11 @@
       "path":"Domains\\Entities\\CalendarEventDetail.mqh",
       "compile":false,
       "relative_to_project":true
+    },
+    {
+      "path":"Services\\testest.mqh",
+      "compile":false,
+      "relative_to_project":true
     }
   ]
 }
