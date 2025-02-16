@@ -25,6 +25,7 @@
 #include "Services/MoneyManagement/FixedPercentageMoneyManagement.mqh"
 #include "Services/MoneyManagement/FixedVolatilityMoneyManagement.mqh"
 #include "Services/ErrorLogger.mqh"
+#include "Services/testest.mqh"
 
 input string TitleMGMT = "";                        //【資金管理】---------------------------------------------------------
 
