@@ -43,13 +43,6 @@ public:
     {
         DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
         
-        double move_average_today = 0.0;
-        double move_average_tomorrow = 0.0;
-        if (!KingKeltnerMAIndicator::GetLatestValue(move_average_today, 40, 0))
-            return WRONG_VALUE;
-        if (!KingKeltnerMAIndicator::GetLatestValue(move_average_tomorrow, 40, 1))
-            return WRONG_VALUE;
-        
         int three_roles_signal = 0;
         if (!IchimokuIndicator::GetThreeRolesSignal(parameters.IchimokuHandle, three_roles_signal))
             return WRONG_VALUE;
