@@ -348,6 +348,16 @@
       "path":"Services\\Indicators\\IchimokuIndicator.mqh",
       "compile":false,
       "relative_to_project":true
+    },
+    {
+      "path":"Services\\TradingRules\\DragonCloudTradingRule.mqh",
+      "compile":false,
+      "relative_to_project":true
+    },
+    {
+      "path":"Domains\\Entities\\TradingRuleParameters\\DragonCloudTradingRuleParameters.mqh",
+      "compile":false,
+      "relative_to_project":true
     }
   ]
 }

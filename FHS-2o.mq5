@@ -15,6 +15,7 @@
 #include "Services/TradingRules/ThermostatTradingRule.mqh"
 #include "Services/TradingRules/DynamicBreakoutTradingRule.mqh"
 #include "Services/TradingRules/SuperComboTradingRule.mqh"
+#include "Services/TradingRules/DragonCloudTradingRule.mqh"
 #include "Services/TradingRules/TestTradingRule.mqh"
 #include "Services/MoneyManagement/NLotMoneyManagement.mqh"
 #include "Services/MoneyManagement/FixedRiskMoneyManagement.mqh"
