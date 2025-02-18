@@ -2,7 +2,7 @@ class ATRIndicator
 {
 public:
     /// <summary>
-    /// ATRインジケーターのハンドルを生成します。
+    /// ATRインジケーターのハンドルを生成
     /// </summary>
     /// <param name="symbol">銘柄名</param>
     /// <param name="timeframe">タイムフレーム</param>
