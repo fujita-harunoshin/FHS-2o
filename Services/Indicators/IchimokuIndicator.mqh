@@ -88,50 +88,43 @@ public:
     }
     
     /// <summary>
-    /// 転換線と基準線のクロス判定を行う
-    /// 2本前と1本前のバーの転換線と基準線を比較し、
-    /// 上抜け（アップクロス）の場合は 1、下抜け（ダウンクロス）の場合は -1、
-    /// それ以外は 0 
+    /// 現在の転換線と基準線の状態をチェック
+    /// 転換線が基準線を上回っている場合は「買い許可状態」、
+    /// 転換線が基準線を下回っている場合は「売り許可状態」と判断
+    /// この状態を基に、エグジットシグナルや新規エントリーの可否を判断
     /// </summary>
     /// <param name="handle">Ichimokuインジケーターのハンドル</param>
     /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
     static bool GetTenkanKijunCrossSignal(const int handle, int &signal)
     {
-        double tenkan[2], kijun[2];
+        double tenkan[1], kijun[1];
     
-        // 転換線（バッファインデックス 0）の値を取得（1日前と2日前の値）
-        // CopyBuffer の start パラメータを 1 にして、2件分取得
-        if(CopyBuffer(handle, 0, 1, 2, tenkan) != 2)
+        // 転換線（バッファインデックス 0）の値を取得
+        if(CopyBuffer(handle, 0, 1, 1, tenkan) != 2)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 転換線の取得に失敗しました。");
             return false;
         }
     
-        // 基準線（バッファインデックス 1）の値を取得（1日前と2日前の値）
-        if(CopyBuffer(handle, 1, 1, 2, kijun) != 2)
+        // 基準線（バッファインデックス 1）の値を取得
+        if(CopyBuffer(handle, 1, 1, 1, kijun) != 2)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 基準線の取得に失敗しました。");
             return false;
         }
 
-        // 配列の index 0 が直近（1日前）、index 1 が2本前（2日前）となる
-        // 2本前では転換線が基準線以下（または同値）で、
-        // 直近では転換線が基準線を上回っている → 上抜け（アップクロス）
-        if(tenkan[1] <= kijun[1] && tenkan[0] > kijun[0])
+        if(tenkan[0] > kijun[0])
         {
             signal = 1;
             return true;
         }
         
-        // 2本前では転換線が基準線以上（または同値）で、
-        // 直近では転換線が基準線を下回っている → 下抜け（ダウンクロス）
-        if(tenkan[1] >= kijun[1] && tenkan[0] < kijun[0])
+        if(tenkan[0] < kijun[0])
         {
             signal = -1;
             return true;
         }
 
-        // クロスが発生していない場合
         signal = 0;
         return true;
     }
