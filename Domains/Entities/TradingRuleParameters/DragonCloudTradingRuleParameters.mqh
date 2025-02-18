@@ -1,5 +1,4 @@
 #include "ITradingRuleParameters.mqh"
-#include "../CalendarEventDetail.mqh"
 
 /// <summary>
 /// ドラゴンクラウド売買ルールクラスのパラメータ
@@ -8,14 +7,19 @@ class DragonCloudTradingRuleParameters : public ITradingRuleParameters
 {
 public:
     /// <summary>
-    /// 時間情報
+    /// 買いポジション所持フラグ
     /// </summary>
-    static TimeData *TimeDataInstance;
+    static bool HasBuyPosition;
 
     /// <summary>
-    /// イベント情報
+    /// 買いポジション所持フラグ
     /// </summary>
-    static CalendarEventDetail Events[];
+    static bool HasSellPosition;
+
+    /// <summary>
+    /// 一目均衡表ハンドル
+    /// </summary>
+    static int IchimokuHandle;
 
     /// <summary>
     /// 売買シグナル発生時の価格
@@ -23,5 +27,7 @@ public:
     double PriceAtSignal;
 };
 
-TimeData *DragonCloudTradingRuleParameters::TimeDataInstance = new TimeData();
-CalendarEventDetail DragonCloudTradingRuleParameters::Events[] = {};
+bool DragonCloudTradingRuleParameters::HasBuyPosition = false;
+bool DragonCloudTradingRuleParameters::HasSellPosition = false;
+int DragonCloudTradingRuleParameters::IchimokuHandle = 0;
+

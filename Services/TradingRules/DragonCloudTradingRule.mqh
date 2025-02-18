@@ -17,6 +17,9 @@ public:
     /// </summary>
     DragonCloudTradingRule()
     {
+        DragonCloudTradingRuleParameters::HasBuyPosition = false;
+        DragonCloudTradingRuleParameters::HasSellPosition = false;
+        DragonCloudTradingRuleParameters::IchimokuHandle = IchimokuIndicator::CreateHandle(_Symbol, _Period, 9, 26, 52);
     }
     
     /// <summary>
@@ -25,6 +28,8 @@ public:
     /// <returns>初期化成否</returns>
     bool Init() override
     {
+        if (DragonCloudTradingRuleParameters::IchimokuHandle == INVALID_HANDLE) return false;
+        
         return true;
     }
 
@@ -36,59 +41,7 @@ public:
     /// <returns>エントリー種別</returns>
     ENUM_ORDER_TYPE CheckEntrySignal(ITradingRuleParameters &params, double &entry_price) override
     {
-        if(MathRand() % 1000 == 0)
-        {
-            int signal_type = MathRand() % 3;
-            switch(signal_type)
-            {
-                case 0:
-                {
-                    // 市場注文：買いか売りをランダムに決定
-                    if(MathRand() % 2 == 0)
-                    {
-                        Print("成行買い注文のシグナル発生");
-                        return ORDER_TYPE_BUY;
-                    }
-                    else
-                    {
-                        Print("成行売り注文のシグナル発生");
-                        return ORDER_TYPE_SELL;
-                    }
-                }
-                case 1:
-                {
-                    // 指値注文（リミット注文）
-                    if(MathRand() % 2 == 0)
-                    {
-                        entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - Utility::PipsToPrice(5);
-                        Print("指値買い注文のシグナル発生 - price: ", entry_price);
-                        return ORDER_TYPE_BUY_LIMIT;
-                    }
-                    else
-                    {
-                        entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID) + Utility::PipsToPrice(5);
-                        Print("指値売り注文のシグナル発生 - price: ", entry_price);
-                        return ORDER_TYPE_SELL_LIMIT;
-                    }
-                }
-                case 2:
-                {
-                    // 逆指値注文（ストップ注文）
-                    if(MathRand() % 2 == 0)
-                    {
-                        entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK) + Utility::PipsToPrice(5);
-                        Print("逆指値買い注文のシグナル発生 - price: ", entry_price);
-                        return ORDER_TYPE_BUY_STOP;
-                    }
-                    else
-                    {
-                        entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID) - Utility::PipsToPrice(5);
-                        Print("逆指値売り注文のシグナル発生 - price: ", entry_price);
-                        return ORDER_TYPE_SELL_STOP;
-                    }
-                }
-            }
-        }
+        
         return WRONG_VALUE;
     }
     
