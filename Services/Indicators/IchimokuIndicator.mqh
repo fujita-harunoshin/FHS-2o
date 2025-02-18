@@ -13,9 +13,9 @@ public:
     /// <param name="senkouSpanBPeriod">先行スパンBの期間</param>
     /// <returns>生成されたハンドル。作成失敗時はINVALID_HANDLEを返す</returns>
     static int CreateHandle(const string symbol, const ENUM_TIMEFRAMES timeframe,
-                            const int tenkanPeriod, const int kijunPeriod, const int senkouSpanBPeriod)
+                            const int tenkan_period, const int kijun_period, const int senkou_span_B_period)
     {
-        int handle = iIchimoku(symbol, timeframe, tenkanPeriod, kijunPeriod, senkouSpanBPeriod);
+        int handle = iIchimoku(symbol, timeframe, tenkan_period, kijun_period, senkou_span_B_period);
         if(handle == INVALID_HANDLE)
             Print("IchimokuIndicator::CreateHandle - Ichimokuハンドルの生成に失敗しました。");
         
@@ -30,7 +30,7 @@ public:
     /// 三役好転の場合は 1、三役逆転の場合は -1、
     /// 判定不能もしくはエラー時は 0 を返す
     /// </returns>
-    static int GetSignalFlag(const int handle)
+    static int GetThreeRolesSignal(const int handle)
     {
         double tenkan_buffer[1], kijun_buffer[1];
         double senkou_A_buffer[1], senkou_B_buffer[1];
@@ -83,5 +83,48 @@ public:
         {
             return 0;
         }
+    }
+    
+    /// <summary>
+    /// 転換線と基準線のクロス判定を行う
+    /// 2本前と1本前のバーの転換線と基準線を比較し、
+    /// 上抜け（アップクロス）の場合は 1、下抜け（ダウンクロス）の場合は -1、
+    /// それ以外は 0 を返す
+    /// </summary>
+    /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <returns>上抜け：1、下抜け：-1、クロスなし：0</returns>
+    static int GetTenkanKijunCrossSignalInt(const int handle)
+    {
+        double tenkan_old = 0.0, tenkan_recent = 0.0;
+        double kijun_old  = 0.0, kijun_recent  = 0.0;
+
+        // 転換線（バッファインデックス 0）の値を取得（2本前と1本前）
+        if(CopyBuffer(handle, 0, 2, 1, &tenkan_old) != 1 ||
+           CopyBuffer(handle, 0, 1, 1, &tenkan_recent) != 1)
+        {
+            Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 転換線の取得に失敗しました。");
+            return 0;
+        }
+
+        // 基準線（バッファインデックス 1）の値を取得（2本前と1本前）
+        if(CopyBuffer(handle, 1, 2, 1, &kijun_old) != 1 ||
+           CopyBuffer(handle, 1, 1, 1, &kijun_recent) != 1)
+        {
+            Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 基準線の取得に失敗しました。");
+            return 0;
+        }
+
+        // 2本前では転換線が基準線以下（または同値）で、
+        // 直近では転換線が基準線を上回っている → 上抜け（アップクロス）
+        if(tenkan_old <= kijun_old && tenkan_recent > kijun_recent)
+            return 1;
+        
+        // 2本前では転換線が基準線以上（または同値）で、
+        // 直近では転換線が基準線を下回っている → 下抜け（ダウンクロス）
+        if(tenkan_old >= kijun_old && tenkan_recent < kijun_recent)
+            return -1;
+
+        // クロスが発生していない場合
+        return 0;
     }
 };
