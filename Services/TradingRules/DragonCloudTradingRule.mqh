@@ -1,6 +1,6 @@
-#include "ITradingRule.mqh"
 #include "../../Domains/Entities/TradingRuleParameters/DragonCloudTradingRuleParameters.mqh"
 #include "../Indicators/IchimokuIndicator.mqh"
+#include "ITradingRule.mqh"
 
 /// <summary>
 /// ドラゴンクラウド売買ルール
@@ -17,9 +17,14 @@ public:
     /// </summary>
     DragonCloudTradingRule()
     {
+        m_tradingRule = TRADING_RULE_TYPE::DRAGON_CLOUD;
+        m_name = "ドラゴンクラウド売買ルール";
+    
+        DragonCloudTradingRuleParameters::BarDataInstance = new BarData();
         DragonCloudTradingRuleParameters::HasBuyPosition = false;
         DragonCloudTradingRuleParameters::HasSellPosition = false;
         DragonCloudTradingRuleParameters::IchimokuHandle = IchimokuIndicator::CreateHandle(_Symbol, _Period, 9, 26, 52);
+        DragonCloudTradingRuleParameters::EntriedCurrentBar = false;
     }
     
     /// <summary>
@@ -42,6 +47,8 @@ public:
     ENUM_ORDER_TYPE CheckEntrySignal(ITradingRuleParameters &params, double &entry_price) override
     {
         DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
+        
+        if (parameters.EntriedCurrentBar) return WRONG_VALUE;
         
         int three_roles_signal = 0;
         if (!IchimokuIndicator::GetThreeRolesSignal(parameters.IchimokuHandle, three_roles_signal))
@@ -70,6 +77,15 @@ public:
     /// <returns>エグジットシグナル</returns>
     bool CheckExitSignal(ITradingRuleParameters &params) override
     {
+        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
+        
+        int tenkan_kijun_state = 0;
+        if (!IchimokuIndicator::GetTenkanKijunState(parameters.IchimokuHandle, tenkan_kijun_state))
+            return false;
+        
+        if (tenkan_kijun_state == -1 && parameters.PositionType == POSITION_TYPE_BUY) return true;
+        else if (tenkan_kijun_state == 1 && parameters.PositionType == POSITION_TYPE_SELL) return true;
+        
         return false;
     }
 
@@ -109,7 +125,7 @@ public:
     /// </summary>
     ITradingRuleParameters* CreateParametersInstance() override
     {
-        return new TestTradingRuleParameters();
+        return new DragonCloudTradingRuleParameters();
     }
     
     /// <summary>
@@ -117,6 +133,8 @@ public:
     /// </summary>
     void UpdateParametersOnTick() override
     {
+        if (DragonCloudTradingRuleParameters::BarDataInstance.IsNewBar())
+            DragonCloudTradingRuleParameters::EntriedCurrentBar = false;
     }
     
     /// <summary>
@@ -126,10 +144,6 @@ public:
     /// <param name="params">売買ルールパラメータ</param>
     void UpdateParametersOnSignaled(ENUM_ORDER_TYPE order_type, ITradingRuleParameters &params) override
     {
-        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
-        parameters.OrderType = order_type;
-        parameters.PriceAtSignal = (order_type == ORDER_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                                                  : SymbolInfoDouble(_Symbol, SYMBOL_BID);
     }
     
     /// <summary>
@@ -141,6 +155,7 @@ public:
     {
         DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
         
+        parameters.EntriedCurrentBar = true;
         parameters.PositionType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
         if (parameters.PositionType == POSITION_TYPE_BUY)
             parameters.HasBuyPosition = true;

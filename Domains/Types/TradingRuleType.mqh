@@ -34,6 +34,11 @@ enum TRADING_RULE_TYPE
     SUPER_COMBO = 5,
     
     /// <summary>
+    /// ドラゴンクラウド売買ルール
+    /// </summary>
+    DRAGON_CLOUD = 6,
+    
+    /// <summary>
     /// テスト用売買ルール
     /// </summary>
     Test = 99,

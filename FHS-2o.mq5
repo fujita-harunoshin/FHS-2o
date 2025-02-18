@@ -92,6 +92,11 @@ input MONEY_MANAGEMENT_TYPE TSMoneyManagement;      //   └ 資金管理法選�
 input string SubTitleDB = "";                       // ★ ダイナミックブレイクアウト売買ルール
 input bool UseDynamicBreakoutTradingRule = true;  //   └ 採否
 input MONEY_MANAGEMENT_TYPE DBMoneyManagement;      //   └ 資金管理法選択
+
+//=== 売買ルール7: ドラゴンクラウド売買ルール
+input string SubTitleDC = "";                       // ★ ドラゴンクラウド売買ルール
+input bool UseDragonCloudTradingRule = true;        //   └ 採否
+input MONEY_MANAGEMENT_TYPE DCMoneyManagement;      //   └ 資金管理法選択
                             
 //=== 売買ルール99: テスト用売買ルール
 input string SubTitleTestTest = "";                 // ★ テスト用売買ルール
@@ -137,6 +142,10 @@ int OnInit()
     
     if (UseDynamicBreakoutTradingRule)
         if (!AddStrategy(new DynamicBreakoutTradingRule(), DBMoneyManagement))
+            return INIT_FAILED;
+    
+    if (UseDragonCloudTradingRule)
+        if (!AddStrategy(new DragonCloudTradingRule(), DCMoneyManagement))
             return INIT_FAILED;
     
     if (UseTestTradingRule)

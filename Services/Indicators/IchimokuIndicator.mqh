@@ -28,6 +28,7 @@ public:
     /// 判定不能もしくはエラー時は 0 を返す
     /// </summary>
     /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <param name="signal">結果を返す参照変数</param>
     /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
     static bool GetThreeRolesSignal(const int handle, int &signal)
     {
@@ -89,25 +90,27 @@ public:
     
     /// <summary>
     /// 現在の転換線と基準線の状態をチェック
-    /// 転換線が基準線を上回っている場合は「買い許可状態」、
-    /// 転換線が基準線を下回っている場合は「売り許可状態」と判断
+    /// 転換線が基準線を上回っている場合は「買い許可状態」の1、
+    /// 転換線が基準線を下回っている場合は「売り許可状態」の-1
+    /// 等しい場合は0
     /// この状態を基に、エグジットシグナルや新規エントリーの可否を判断
     /// </summary>
     /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <param name="state">結果を返す参照変数</param>
     /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
-    static bool GetTenkanKijunCrossSignal(const int handle, int &signal)
+    static bool GetTenkanKijunState(const int handle, int &state)
     {
         double tenkan[1], kijun[1];
     
         // 転換線（バッファインデックス 0）の値を取得
-        if(CopyBuffer(handle, 0, 1, 1, tenkan) != 2)
+        if(CopyBuffer(handle, 0, 1, 1, tenkan) != 1)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 転換線の取得に失敗しました。");
             return false;
         }
     
         // 基準線（バッファインデックス 1）の値を取得
-        if(CopyBuffer(handle, 1, 1, 1, kijun) != 2)
+        if(CopyBuffer(handle, 1, 1, 1, kijun) != 1)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 基準線の取得に失敗しました。");
             return false;
@@ -115,17 +118,17 @@ public:
 
         if(tenkan[0] > kijun[0])
         {
-            signal = 1;
+            state = 1;
             return true;
         }
         
         if(tenkan[0] < kijun[0])
         {
-            signal = -1;
+            state = -1;
             return true;
         }
 
-        signal = 0;
+        state = 0;
         return true;
     }
 };
