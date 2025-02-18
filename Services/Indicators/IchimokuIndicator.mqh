@@ -28,7 +28,7 @@ public:
     /// <param name="handle">Ichimokuインジケーターのハンドル</param>
     /// <returns>
     /// 三役好転の場合は 1、三役逆転の場合は -1、
-    /// 判定不能もしくはエラー時は 0 を返します。
+    /// 判定不能もしくはエラー時は 0 を返す
     /// </returns>
     static int GetSignalFlag(const int handle)
     {
