@@ -41,6 +41,21 @@ public:
     /// <returns>エントリー種別</returns>
     ENUM_ORDER_TYPE CheckEntrySignal(ITradingRuleParameters &params, double &entry_price) override
     {
+        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
+        
+        double move_average_today = 0.0;
+        double move_average_tomorrow = 0.0;
+        if (!KingKeltnerMAIndicator::GetLatestValue(move_average_today, 40, 0))
+            return WRONG_VALUE;
+        if (!KingKeltnerMAIndicator::GetLatestValue(move_average_tomorrow, 40, 1))
+            return WRONG_VALUE;
+        
+        int three_roles_signal = 0;
+        if (!IchimokuIndicator::GetThreeRolesSignal(parameters.IchimokuHandle, three_roles_signal))
+            return WRONG_VALUE;
+        
+        if (three_roles_signal == 1 && !parameters.HasBuyPosition) return ORDER_TYPE_BUY;
+        else if (three_roles_signal == -1 && !parameters.HasSellPosition) return ORDER_TYPE_SELL;
         
         return WRONG_VALUE;
     }
@@ -52,11 +67,6 @@ public:
     /// <returns>シグナル発生時は true</returns>
     bool CheckOrderCancelSignal(ITradingRuleParameters &params) override
     {
-        if (MathRand() % 1000 == 0)
-        {
-            Print("ペンディングオーダーキャンセルシグナル発生");
-            return true;
-        }
         return false;
     }
 
@@ -67,35 +77,6 @@ public:
     /// <returns>エグジットシグナル</returns>
     bool CheckExitSignal(ITradingRuleParameters &params) override
     {
-        if(MathRand() % 1000 == 0)
-        {
-            TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
-            switch(parameters.OrderType)
-            {
-                case ORDER_TYPE_BUY:
-                    Print("エグジットシグナル発生: 成行買い注文の決済");
-                    break;
-                case ORDER_TYPE_SELL:
-                    Print("エグジットシグナル発生: 成行売り注文の決済");
-                    break;
-                case ORDER_TYPE_BUY_LIMIT:
-                    Print("エグジットシグナル発生: 指値買い注文の決済");
-                    break;
-                case ORDER_TYPE_SELL_LIMIT:
-                    Print("エグジットシグナル発生: 指値売り注文の決済");
-                    break;
-                case ORDER_TYPE_BUY_STOP:
-                    Print("エグジットシグナル発生: 逆指値買い注文の決済");
-                    break;
-                case ORDER_TYPE_SELL_STOP:
-                    Print("エグジットシグナル発生: 逆指値売り注文の決済");
-                    break;
-                default:
-                    Print("エグジットシグナル発生: 不明な注文タイプの決済");
-                    break;
-            }
-            return true;
-        }
         return false;
     }
 
@@ -106,23 +87,7 @@ public:
     /// <returns>損切ライン</returns>
     double CalculateStopLossPrice(ITradingRuleParameters &params) override
     {
-        TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
-        double sl_price = 0.0;
-        
-        if (parameters.OrderType == ORDER_TYPE_BUY ||
-            parameters.OrderType == ORDER_TYPE_BUY_LIMIT ||
-            parameters.OrderType == ORDER_TYPE_BUY_STOP)
-        {
-            sl_price = parameters.PriceAtSignal - Utility::PipsToPrice(10);
-        }
-        else if (parameters.OrderType == ORDER_TYPE_SELL ||
-                 parameters.OrderType == ORDER_TYPE_SELL_LIMIT ||
-                 parameters.OrderType == ORDER_TYPE_SELL_STOP)
-        {
-            sl_price = parameters.PriceAtSignal + Utility::PipsToPrice(10);
-        }
-        
-        return sl_price;
+        return 0.0;
     }
 
     /// <summary>
@@ -132,23 +97,7 @@ public:
     /// <returns>損切ライン</returns>
     double CalculateTakeProfitPrice(ITradingRuleParameters &params) override
     {
-        TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
-        double tp_price = 0.0;
-        
-        if (parameters.OrderType == ORDER_TYPE_BUY ||
-            parameters.OrderType == ORDER_TYPE_BUY_LIMIT ||
-            parameters.OrderType == ORDER_TYPE_BUY_STOP)
-        {
-            tp_price = parameters.PriceAtSignal + Utility::PipsToPrice(20);
-        }
-        else if (parameters.OrderType == ORDER_TYPE_SELL ||
-                 parameters.OrderType == ORDER_TYPE_SELL_LIMIT ||
-                 parameters.OrderType == ORDER_TYPE_SELL_STOP)
-        {
-            tp_price = parameters.PriceAtSignal - Utility::PipsToPrice(20);
-        }
-        
-        return tp_price;
+        return 0.0;
     }
     
     /// <summary>
@@ -175,24 +124,6 @@ public:
     /// </summary>
     void UpdateParametersOnTick() override
     {
-        if (TestTradingRuleParameters::TimeDataInstance.IsNewDay())
-        {
-            EconomicCalendarData::ClearEventsData(TestTradingRuleParameters::Events);
-            int eventCount = EconomicCalendarData::GetTodayEvents(_Symbol, TestTradingRuleParameters::Events);
-        
-            // 取得件数を表示
-            Print("本日のイベント数: ", eventCount);
-            
-            // 取得した各イベントの詳細を表示
-            for (int i = 0; i < ArraySize(TestTradingRuleParameters::Events); i++)
-            {
-                CalendarEventDetail detail = TestTradingRuleParameters::Events[i];
-                // 発生時刻は TimeToString を利用して文字列化
-                string eventTimeStr = TimeToString(detail.value.time, TIME_DATE|TIME_MINUTES);
-                PrintFormat("イベント[%d] - ID: %d, 重要度: %d, 発生時刻: %s", 
-                            i, detail.event.id, detail.event.importance, eventTimeStr);
-            }
-        }
     }
     
     /// <summary>
@@ -202,23 +133,10 @@ public:
     /// <param name="params">売買ルールパラメータ</param>
     void UpdateParametersOnSignaled(ENUM_ORDER_TYPE order_type, ITradingRuleParameters &params) override
     {
-        TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
+        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
         parameters.OrderType = order_type;
         parameters.PriceAtSignal = (order_type == ORDER_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-                                                                  
-        if (parameters.OrderType == ORDER_TYPE_BUY ||
-            parameters.OrderType == ORDER_TYPE_BUY_LIMIT ||
-            parameters.OrderType == ORDER_TYPE_BUY_STOP)
-        {
-            parameters.PriceAtSignal = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-        }
-        else if (parameters.OrderType == ORDER_TYPE_SELL ||
-                 parameters.OrderType == ORDER_TYPE_SELL_LIMIT ||
-                 parameters.OrderType == ORDER_TYPE_SELL_STOP)
-        {
-            parameters.PriceAtSignal = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-        }
     }
     
     /// <summary>
@@ -228,7 +146,13 @@ public:
     /// <param name="params">売買ルールパラメータ</param>
     void UpdateParametersOnEntryIn(ulong deal_ticket, ITradingRuleParameters &params) override
     {
-        TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
+        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
+        
+        parameters.PositionType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+        if (parameters.PositionType == POSITION_TYPE_BUY)
+            parameters.HasBuyPosition = true;
+        else if (parameters.PositionType == POSITION_TYPE_SELL)
+            parameters.HasSellPosition = true;        
     }
     
     /// <summary>
@@ -256,30 +180,11 @@ public:
     /// <param name="params">売買ルールパラメータ</param>
     void UpdateParametersOnEntryOut(ulong deal_ticket, ITradingRuleParameters &params) override
     {
-        TestTradingRuleParameters *parameters = dynamic_cast<TestTradingRuleParameters *>(&params);
-        switch(parameters.OrderType)
-        {
-            case ORDER_TYPE_BUY:
-                Print("成行買い注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            case ORDER_TYPE_SELL:
-                Print("成行売り注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            case ORDER_TYPE_BUY_LIMIT:
-                Print("指値買い注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            case ORDER_TYPE_SELL_LIMIT:
-                Print("指値売り注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            case ORDER_TYPE_BUY_STOP:
-                Print("逆指値買い注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            case ORDER_TYPE_SELL_STOP:
-                Print("逆指値売り注文の手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-            default:
-                Print("不明な注文タイプの手仕舞い完了 - チケット番号: ", deal_ticket);
-                break;
-        }
+        DragonCloudTradingRuleParameters *parameters = dynamic_cast<DragonCloudTradingRuleParameters *>(&params);
+        
+        if (parameters.PositionType == POSITION_TYPE_BUY)
+            parameters.HasBuyPosition = false;
+        else if (parameters.PositionType == POSITION_TYPE_SELL)
+            parameters.HasSellPosition = false;   
     }
 };

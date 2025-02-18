@@ -23,14 +23,13 @@ public:
     }
 
     /// <summary>
-    /// Ichimokuインジケーターのシグナルフラグを取得します。
-    /// </summary>
-    /// <param name="handle">Ichimokuインジケーターのハンドル</param>
-    /// <returns>
+    /// Ichimokuインジケーターのシグナルフラグを取得
     /// 三役好転の場合は 1、三役逆転の場合は -1、
     /// 判定不能もしくはエラー時は 0 を返す
-    /// </returns>
-    static int GetThreeRolesSignal(const int handle)
+    /// </summary>
+    /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
+    static bool GetThreeRolesSignal(const int handle, int &signal)
     {
         double tenkan_buffer[1], kijun_buffer[1];
         double senkou_A_buffer[1], senkou_B_buffer[1];
@@ -40,20 +39,20 @@ public:
            CopyBuffer(handle, 1, 0, 1, kijun_buffer) != 1)
         {
             Print("IchimokuIndicator::GetSignalFlag - 転換線または基準線の取得に失敗しました。");
-            return 0;
+            return false;
         }
 
         if(CopyBuffer(handle, 2, 26, 1, senkou_A_buffer) != 1 ||
            CopyBuffer(handle, 3, 26, 1, senkou_B_buffer) != 1)
         {
             Print("IchimokuIndicator::GetSignalFlag - 先行スパンの取得に失敗しました。");
-            return 0;
+            return false;
         }
 
         if(CopyBuffer(handle, 4, 0, 1, chikou_buffer) != 1)
         {
             Print("IchimokuIndicator::GetSignalFlag - 遅行線の取得に失敗しました。");
-            return 0;
+            return false;
         }
 
         double tenkan = tenkan_buffer[0];
@@ -70,18 +69,21 @@ public:
            current_price > senkouA && current_price > senkouB &&
            chikou > price26)
         {
-            return 1;
+            signal = 1;
+            return true;
         }
         // 三役逆転（非常に強い売りシグナル）の条件
         else if(tenkan < kijun &&
                 current_price < senkouA && current_price < senkouB &&
                 chikou < price26)
         {
-            return -1;
+            signal = -1;
+            return true;
         }
         else
         {
-            return 0;
+            signal = 0;
+            return true;
         }
     }
     
@@ -89,11 +91,11 @@ public:
     /// 転換線と基準線のクロス判定を行う
     /// 2本前と1本前のバーの転換線と基準線を比較し、
     /// 上抜け（アップクロス）の場合は 1、下抜け（ダウンクロス）の場合は -1、
-    /// それ以外は 0 を返す
+    /// それ以外は 0 
     /// </summary>
     /// <param name="handle">Ichimokuインジケーターのハンドル</param>
-    /// <returns>上抜け：1、下抜け：-1、クロスなし：0</returns>
-    static int GetTenkanKijunCrossSignalInt(const int handle)
+    /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
+    static bool GetTenkanKijunCrossSignal(const int handle, int &signal)
     {
         double tenkan[2], kijun[2];
     
@@ -102,28 +104,35 @@ public:
         if(CopyBuffer(handle, 0, 1, 2, tenkan) != 2)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 転換線の取得に失敗しました。");
-            return 0;
+            return false;
         }
     
         // 基準線（バッファインデックス 1）の値を取得（1日前と2日前の値）
         if(CopyBuffer(handle, 1, 1, 2, kijun) != 2)
         {
             Print("IchimokuIndicator::GetTenkanKijunCrossSignalInt - 基準線の取得に失敗しました。");
-            return 0;
+            return false;
         }
 
         // 配列の index 0 が直近（1日前）、index 1 が2本前（2日前）となる
         // 2本前では転換線が基準線以下（または同値）で、
         // 直近では転換線が基準線を上回っている → 上抜け（アップクロス）
         if(tenkan[1] <= kijun[1] && tenkan[0] > kijun[0])
-            return 1;
+        {
+            signal = 1;
+            return true;
+        }
         
         // 2本前では転換線が基準線以上（または同値）で、
         // 直近では転換線が基準線を下回っている → 下抜け（ダウンクロス）
         if(tenkan[1] >= kijun[1] && tenkan[0] < kijun[0])
-            return -1;
+        {
+            signal = -1;
+            return true;
+        }
 
         // クロスが発生していない場合
-        return 0;
+        signal = 0;
+        return true;
     }
 };
