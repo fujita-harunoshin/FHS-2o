@@ -35,6 +35,31 @@ public:
     /// 売買シグナル発生時の価格
     /// </summary>
     double PriceAtSignal;
+    
+    /// <summary>
+    /// 損切ライン
+    /// </summary>
+    double StopLossPrice;
+    
+    /// <summary>
+    /// トレーリングストップ計算前の現在価格 [クォート通貨単位]
+    /// </summary>
+    double CurrentPriceBeforeTrail;
+    
+    /// <summary>
+    /// 現在の損切ライン [クォート通貨単位]
+    /// </summary>
+    double CurrentStopLossPrice;
+    
+    /// <summary>
+    /// 初期の損切ライン [クォート通貨単位]
+    /// </summary>
+    double InitialStopLossPrice;
+    
+    /// <summary>
+    /// エントリー価格 [クォート通貨単位]
+    /// </summary>
+    double EntryPrice;
 };
 
 BarData *DragonCloudTradingRuleParameters::BarDataInstance = new BarData();

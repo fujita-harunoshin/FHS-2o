@@ -131,4 +131,43 @@ public:
         state = 0;
         return true;
     }
+    
+    /// <summary>
+    /// 基準線の最新値を取得
+    /// </summary>
+    /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <param name="value">結果を返す参照変数</param>
+    /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
+    static bool GetLatestKijunSen(const int handle, double &value)
+    {
+        double kijun_buffer[1];
+
+        if(CopyBuffer(handle, 1, 0, 1, kijun_buffer) != 1)
+        {
+            Print("IchimokuIndicator::GetLatestKijunSen - 基準線の取得に失敗しました。");
+            return false;
+        }
+
+        value = kijun_buffer[0];
+        return true;
+    }
+    
+    /// <summary>
+    /// 先行スパンBの最新値を取得
+    /// </summary>
+    /// <param name="handle">Ichimokuインジケーターのハンドル</param>
+    /// <param name="value">結果を返す参照変数</param>
+    /// <returns>取得に成功した場合はtrue、失敗した場合はfalse</returns>
+    static bool GetLatestSenkouSpanB(const int handle, double &value)
+    {
+        double senkou_B_buffer[1];
+        if(CopyBuffer(handle, 3, 26, 1, senkou_B_buffer) != 1)
+        {
+            Print("IchimokuIndicator::GetSignalFlag - 先行スパンBの取得に失敗しました。");
+            return false;
+        }
+
+        value = senkou_B_buffer[0];
+        return true;
+    }
 };

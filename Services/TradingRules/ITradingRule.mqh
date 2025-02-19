@@ -3,6 +3,7 @@
 #include "../MarketData/TimeData.mqh"
 #include "../MarketData/PriceData.mqh"
 #include "../MarketData/EconomicCalendarData.mqh"
+#include "../Utility.mqh"
 
 /// <summary>
 /// 売買ルール(エントリー/エグジット/SL/TP/トレーリングストップ計算)の抽象インターフェース
